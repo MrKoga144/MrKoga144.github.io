@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para El Amor De Mi Vida 🌻</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        handwriting: ['Caveat', 'cursive'],
+                    },
+                    colors: {
+                        flower: {
+                            yellow: '#FFD700',
+                            bright: '#FFEA00',
+                            amber: '#FFB703',
+                            orange: '#FB8500',
+                            stem: '#4A7C59',
+                            leaf: '#68B0AB',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #fffcf0 0%, #fff3cd 40%, #fef08a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Animaciones */
+        @keyframes bloom {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            70% { transform: scale(1.08) rotate(10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        @keyframes softGlow {
+            0%, 100% { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4)); }
+            50% { filter: drop-shadow(0 0 28px rgba(255, 215, 0, 0.8)); }
+        }
+
+        @keyframes floatParticle {
+            0% { transform: translateY(-10vh) rotate(0deg) scale(0.8); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(105vh) rotate(360deg) scale(1.2); opacity: 0; }
+        }
+
+        @keyframes clickHeart {
+            0% { transform: translate(-50%, -50%) scale(0.3) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-50%, -120px) scale(1.4) rotate(15deg); opacity: 0; }
+        }
+
+        .flower-bloom { animation: bloom 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; transform-origin: bottom center; }
+        .flower-sway { animation: sway 6s ease-in-out infinite; transform-origin: bottom center; }
+        .glow-effect { animation: softGlow 4s ease-in-out infinite; }
+        .particle { position: absolute; pointer-events: none; animation: floatParticle linear infinite; }
+
+        .click-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            animation: clickHeart 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* Sobre Animado */
+        .envelope-wrapper {
+            perspective: 1000px;
+        }
+        
+        .envelope {
+            transition: transform 0.6s ease;
+            transform-style: preserve-3d;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #fcd34d;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between items-center relative text-slate-800 antialiased">
+
+    <!-- Contenedor de partículas flotantes de fondo -->
+    <div id="particles-container" class="fixed inset-0 pointer-events-none z-0 overflow-hidden"></div>
+
+    <!-- Música de Fondo Silenciosa por defecto / Reproductor -->
+    <audio id="bg-music" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-romantic-sunset-688.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Barra Superior de Botones e Interacción -->
+    <header class="w-full max-w-4xl mx-auto p-4 flex justify-between items-center z-20">
+        <div class="flex items-center space-x-2 bg-white/70 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-amber-200/50 shadow-sm">
+            <span class="p-1.5 bg-amber-400/20 text-amber-700 rounded-full">
+                <i data-lucide="heart" class="w-4 h-4 fill-amber-500 text-amber-500"></i>
+            </span>
+            <span class="text-xs font-bold tracking-wider text-amber-900 uppercase">Para mi persona favorita</span>
+        </div>
+        
+        <div class="flex space-x-2">
+        </div>
+    </header>
+
+    <!-- Sección Principal -->
+    <main class="flex-1 flex flex-col justify-center items-center px-4 py-4 z-10 w-full max-w-3xl text-center space-y-6">
+
+        <!-- Contador de Tiempo Juntos -->
+        <div id="counter-card" class="glass-panel px-5 py-3 rounded-full shadow-lg border border-white/80 inline-flex items-center gap-2 sm:gap-4 text-amber-950 font-medium text-xs sm:text-sm transform transition hover:scale-105">
+            <i data-lucide="calendar-heart" class="w-4 h-4 text-amber-600 flex-shrink-0"></i>
+            <span>Llevamos juntos:</span>
+            <span id="time-counter" class="font-bold text-amber-600 tracking-wide">Calculando...</span>
+        </div>
+
+        <!-- Ilustración SVG de la Flor Amarilla -->
+        <div class="relative w-72 h-80 sm:w-80 sm:h-96 flex justify-center items-end my-2 cursor-pointer group" onclick="triggerFlowerPulse(event)">
+            
+            <div id="flower-wrapper" class="flower-bloom glow-effect w-full h-full flex justify-center items-end transition-transform duration-300">
+                <div class="flower-sway w-full h-full flex justify-center items-end">
+                    
+                    <svg viewBox="0 0 300 400" class="w-full h-full overflow-visible">
+                        <defs>
+                            <linearGradient id="petalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#FFF200"/>
+                                <stop offset="60%" stop-color="#FFD700"/>
+                                <stop offset="100%" stop-color="#FF9900"/>
+                            </linearGradient>
+
+                            <linearGradient id="stemGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#386641"/>
+                                <stop offset="50%" stop-color="#6A994E"/>
+                                <stop offset="100%" stop-color="#386641"/>
+                            </linearGradient>
+
+                            <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#703D07"/>
+                                <stop offset="70%" stop-color="#422006"/>
+                                <stop offset="100%" stop-color="#281102"/>
+                            </radialGradient>
+                            
+                            <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+                                <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.15"/>
+                            </filter>
+                        </defs>
+
+                        <!-- Tallo -->
+                        <path d="M150,220 Q145,300 150,390" fill="none" stroke="url(#stemGrad)" stroke-width="10" stroke-linecap="round" />
+
+                        <!-- Hoja Izquierda -->
+                        <g transform="translate(148, 310) rotate(-35) scale(0.9)">
+                            <path d="M0,0 Q-40,-20 -60,10 Q-30,40 0,0" fill="url(#stemGrad)" />
+                            <path d="M0,0 Q-30,-5 -50,5" stroke="#a7c957" stroke-width="1.5" fill="none" opacity="0.6"/>
+                        </g>
+
+                        <!-- Hoja Derecha -->
+                        <g transform="translate(152, 280) rotate(35) scale(1)">
+                            <path d="M0,0 Q40,-20 60,10 Q30,40 0,0" fill="url(#stemGrad)" />
+                            <path d="M0,0 Q30,-5 50,5" stroke="#a7c957" stroke-width="1.5" fill="none" opacity="0.6"/>
+                        </g>
+
+                        <!-- Flor Completa -->
+                        <g id="petals-group" transform="translate(150, 160)" filter="url(#shadow)">
+                            <!-- Capa Trasera de Pétalos -->
+                            <g opacity="0.95">
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(15)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(45)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(75)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(105)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(135)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(165)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(195)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(225)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(255)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(285)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(315)" />
+                                <ellipse rx="18" ry="65" cx="0" cy="-55" fill="url(#petalGrad)" transform="rotate(345)" />
+                            </g>
+
+                            <!-- Capa Principal -->
+                            <g>
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(0)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(30)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(60)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(90)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(120)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(150)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(180)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(210)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(240)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(270)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(300)" />
+                                <path d="M0,0 C-15,-30 -22,-65 0,-85 C22,-65 15,-30 0,0" fill="url(#petalGrad)" transform="rotate(330)" />
+                            </g>
+
+                            <!-- Centro -->
+                            <circle cx="0" cy="0" r="32" fill="url(#centerGrad)" stroke="#FFD700" stroke-width="1.5"/>
+                            <circle cx="0" cy="0" r="26" fill="none" stroke="#FF9900" stroke-width="1" stroke-dasharray="3 3" opacity="0.6"/>
+                        </g>
+                    </svg>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta con el Mensaje Romántico -->
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl shadow-xl border border-white/80 max-w-lg w-full transition transform hover:shadow-2xl">
+            <p id="display-message" class="font-handwriting text-3xl sm:text-4xl text-amber-950 leading-snug font-bold">
+                Te quiero y te amo con todo mi corazón, gracias por iluminar mi vida todos los días 🌻✨
+            </p>
+            <p id="display-subtext" class="text-xs sm:text-sm text-amber-900/70 mt-3 font-semibold tracking-wider uppercase">
+                Esta flor amarilla es un pequeño símbolo de todo lo que siento por ti
+            </p>
+        </div>
+
+        <!-- Botones de Acción Especiales (Carta y Razones) -->
+        <div class="flex flex-wrap justify-center gap-3 pt-2">
+            <button onclick="openLetterModal()" class="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold px-5 py-3 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5">
+                <i data-lucide="mail-open" class="w-5 h-5"></i>
+                <span>Abrir mi carta para ti 💌</span>
+            </button>
+
+            <button onclick="openReasonsModal()" class="flex items-center gap-2 bg-white/90 hover:bg-white text-amber-950 font-semibold px-5 py-3 rounded-2xl shadow-md hover:shadow-lg transition border border-amber-200/80 transform hover:-translate-y-0.5">
+                <i data-lucide="sparkles" class="w-5 h-5 text-amber-500"></i>
+                <span>Razones por las que te amo ❤️</span>
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="w-full text-center py-4 text-xs text-amber-900/60 z-10 font-medium">
+        Haz clic en cualquier parte de la pantalla para soltar amor ✨
+    </footer>
+
+    <!-- MODAL 1: CARTA DE AMOR -->
+    <div id="modal-letter" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel bg-amber-50/95 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-amber-200/80 transform scale-95 transition-transform duration-300 relative text-left">
+            <button onclick="closeLetterModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-white/50 transition">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-2.5 bg-amber-100 text-amber-600 rounded-2xl">
+                    <i data-lucide="heart" class="w-6 h-6 fill-amber-500"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-amber-950">Una Carta Especial</h3>
+                    <p class="text-xs text-amber-800/70">Escrita directo desde el corazón</p>
+                </div>
+            </div>
+
+            <div class="bg-white/80 p-5 sm:p-6 rounded-2xl border border-amber-100 shadow-inner max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <p id="display-letter" class="font-handwriting text-2xl sm:text-3xl text-amber-950 leading-relaxed whitespace-pre-line">
+                    Querida mía,
+
+                    Si pudiera darte una sola cosa en la vida, me gustaría darte la capacidad de ver a través de mis ojos, sólo entonces te darías cuenta de lo especial que eres para mí.
+
+                    Esta flor amarilla no se marchita jamás, igual que el cariño tan grande que siento por ti. Gracias por cada sonrisa, cada abrazo y por ser mi refugio seguro.
+
+                    Te amo hoy, mañana y siempre. 💛
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: RAZONES POR LAS QUE TE AMO -->
+    <div id="modal-reasons" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel bg-white/95 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-amber-200/80 transform scale-95 transition-transform duration-300 relative text-left">
+            <button onclick="closeReasonsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-5">
+                <div class="p-2.5 bg-amber-100 text-amber-600 rounded-2xl">
+                    <i data-lucide="sparkles" class="w-6 h-6 text-amber-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-amber-950">Razones por las que te amo</h3>
+                    <p class="text-xs text-amber-800/70">Solo algunas de las miles que existen</p>
+                </div>
+            </div>
+
+            <div id="reasons-list" class="space-y-3 max-h-[55vh] overflow-y-auto pr-1 custom-scrollbar">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: EDICIÓN Y PERSONALIZACIÓN COMPLETA -->
+    <div id="edit-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="glass-panel bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-amber-200 transform scale-95 transition-transform duration-300 relative text-left max-h-[90vh] overflow-y-auto custom-scrollbar">
+            
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-5 h-5 text-amber-500"></i>
+                    Personalizar Tu Regalo
+                </h3>
+                <button onclick="toggleEditModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-slate-700">
+                <!-- Mensaje Corto Principal -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Mensaje Destacado</label>
+                    <textarea id="input-message" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none text-sm font-handwriting text-2xl resize-none"></textarea>
+                </div>
+
+                <!-- Subtítulo -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Subtítulo</label>
+                    <input id="input-subtext" type="text" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none text-xs">
+                </div>
+
+                <!-- Fecha de Inicio / Aniversario -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Fecha de Aniversario / Inicio</label>
+                    <input id="input-date" type="date" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none text-xs">
+                </div>
+
+                <!-- Carta de Amor -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Contenido de la Carta</label>
+                    <textarea id="input-letter" rows="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none text-xs leading-relaxed"></textarea>
+                </div>
+
+                <!-- Razones separadas por comas o saltos de línea -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Razones para Amar (separadas por salto de línea)</label>
+                    <textarea id="input-reasons" rows="3" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none text-xs leading-relaxed" placeholder="Tu sonrisa&#10;Cómo me cuidas&#10;Tu forma de ver la vida"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-3 pt-3 border-t border-slate-100">
+                <button onclick="saveAllChanges()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition text-center flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Guardar y Aplicar</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast de Notificaciones -->
+    <div id="toast" class="fixed bottom-6 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl z-50 flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300">
+        <i data-lucide="check-circle" class="w-5 h-5 text-amber-400"></i>
+        <span id="toast-text" class="text-sm font-medium">Copiado con éxito</span>
+    </div>
+
+    <!-- Lógica de Javascript -->
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+
+        // Datos por defecto
+        const defaultData = {
+            msg: "Te quiero y te amo con todo mi corazón, gracias por iluminar mi vida todos los días 🌻✨",
+            sub: "Esta flor amarilla es un pequeño símbolo de todo lo que siento por ti",
+            date: "2023-09-21",
+            letter: "Querida mía,\n\nSi pudiera darte una sola cosa en la vida, me gustaría darte la capacidad de ver a través de mis ojos, sólo entonces te darías cuenta de lo especial que eres para mí.\n\nEsta flor amarilla no se marchita jamás, igual que el cariño tan grande que siento por ti. Gracias por cada sonrisa, cada abrazo y por ser mi refugio seguro.\n\nTe amo hoy, mañana y siempre. 💛",
+            reasons: [
+                "Tu sonrisa ilumina hasta el día más oscuro.",
+                "La forma tan dulce en la que me miras.",
+                "Tu abrazo siempre se siente como volver a casa.",
+                "Haces que las cosas sencillas sean inolvidables."
+            ]
+        };
+
+        let currentData = { ...defaultData };
+        let musicPlaying = false;
+
+        // Cargar datos al iniciar
+        window.addEventListener('DOMContentLoaded', () => {
+            loadParamsOrStorage();
+            updateUI();
+            startCounter();
+            createParticles();
+
+            // Click global para soles y corazones
+            window.addEventListener('click', (e) => {
+                // Evitar en botones o modales
+                if (e.target.closest('button') || e.target.closest('.glass-panel') || e.target.closest('textarea') || e.target.closest('input')) return;
+                spawnClickHeart(e.clientX, e.clientY);
+            });
+        });
+
+        // Obtener parámetros URL o LocalStorage
+        function loadParamsOrStorage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.get('msg')) currentData.msg = decodeURIComponent(urlParams.get('msg'));
+            else if (localStorage.getItem('flower_msg')) currentData.msg = localStorage.getItem('flower_msg');
+
+            if (urlParams.get('sub')) currentData.sub = decodeURIComponent(urlParams.get('sub'));
+            else if (localStorage.getItem('flower_sub')) currentData.sub = localStorage.getItem('flower_sub');
+
+            if (urlParams.get('date')) currentData.date = urlParams.get('date');
+            else if (localStorage.getItem('flower_date')) currentData.date = localStorage.getItem('flower_date');
+
+            if (urlParams.get('letter')) currentData.letter = decodeURIComponent(urlParams.get('letter'));
+            else if (localStorage.getItem('flower_letter')) currentData.letter = localStorage.getItem('flower_letter');
+
+            if (urlParams.get('reasons')) {
+                currentData.reasons = JSON.parse(decodeURIComponent(urlParams.get('reasons')));
+            } else if (localStorage.getItem('flower_reasons')) {
+                currentData.reasons = JSON.parse(localStorage.getItem('flower_reasons'));
+            }
+        }
+
+        // Actualizar la interfaz
+        function updateUI() {
+            document.getElementById('display-message').textContent = currentData.msg;
+            document.getElementById('display-subtext').textContent = currentData.sub;
+            document.getElementById('display-letter').textContent = currentData.letter;
+
+            // Renderizar Razones
+            const reasonsContainer = document.getElementById('reasons-list');
+            reasonsContainer.innerHTML = '';
+            currentData.reasons.forEach((reason, index) => {
+                const item = document.createElement('div');
+                item.className = 'p-3.5 bg-amber-50/60 rounded-2xl border border-amber-100 flex items-start gap-3 text-slate-700 text-sm';
+                item.innerHTML = `
+                    <span class="w-6 h-6 rounded-full bg-amber-400/20 text-amber-700 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">${index + 1}</span>
+                    <p class="font-medium leading-snug">${reason}</p>
+                `;
+                reasonsContainer.appendChild(item);
+            });
+        }
+
+        // Contador de Tiempo Juntos
+        function startCounter() {
+            function update() {
+                const startDate = new Date(currentData.date);
+                const now = new Date();
+                const diffTime = Math.abs(now - startDate);
+                
+                const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+
+                document.getElementById('time-counter').textContent = `${days} días, ${hours}h y ${minutes}m 💕`;
+            }
+            update();
+            setInterval(update, 60000);
+        }
+
+        // Reproductor de Música
+        function toggleMusic() {
+            const music = document.getElementById('bg-music');
+            const icon = document.getElementById('music-icon');
+            const text = document.getElementById('music-text');
+
+            if (musicPlaying) {
+                music.pause();
+                musicPlaying = false;
+                icon.setAttribute('data-lucide', 'music');
+                text.textContent = 'Música';
+            } else {
+                music.play().then(() => {
+                    musicPlaying = true;
+                    icon.setAttribute('data-lucide', 'volume-2');
+                    text.textContent = 'Sonando ♪';
+                }).catch(() => {
+                    showToast('Haz clic de nuevo para permitir sonido');
+                });
+            }
+            lucide.createIcons();
+        }
+
+        // Modales
+        function openLetterModal() {
+            const m = document.getElementById('modal-letter');
+            m.classList.remove('opacity-0', 'pointer-events-none');
+            m.querySelector('div').classList.replace('scale-95', 'scale-100');
+        }
+        function closeLetterModal() {
+            const m = document.getElementById('modal-letter');
+            m.classList.add('opacity-0', 'pointer-events-none');
+            m.querySelector('div').classList.replace('scale-100', 'scale-95');
+        }
+
+        function openReasonsModal() {
+            const m = document.getElementById('modal-reasons');
+            m.classList.remove('opacity-0', 'pointer-events-none');
+            m.querySelector('div').classList.replace('scale-95', 'scale-100');
+        }
+        function closeReasonsModal() {
+            const m = document.getElementById('modal-reasons');
+            m.classList.add('opacity-0', 'pointer-events-none');
+            m.querySelector('div').classList.replace('scale-100', 'scale-95');
+        }
+
+        function toggleEditModal() {
+            const m = document.getElementById('edit-modal');
+            const isHidden = m.classList.contains('opacity-0');
+            
+            if (isHidden) {
+                document.getElementById('input-message').value = currentData.msg;
+                document.getElementById('input-subtext').value = currentData.sub;
+                document.getElementById('input-date').value = currentData.date;
+                document.getElementById('input-letter').value = currentData.letter;
+                document.getElementById('input-reasons').value = currentData.reasons.join('\n');
+
+                m.classList.remove('opacity-0', 'pointer-events-none');
+                m.querySelector('div').classList.replace('scale-95', 'scale-100');
+            } else {
+                m.classList.add('opacity-0', 'pointer-events-none');
+                m.querySelector('div').classList.replace('scale-100', 'scale-95');
+            }
+        }
+
+        function saveAllChanges() {
+            currentData.msg = document.getElementById('input-message').value.trim() || defaultData.msg;
+            currentData.sub = document.getElementById('input-subtext').value.trim() || defaultData.sub;
+            currentData.date = document.getElementById('input-date').value || defaultData.date;
+            currentData.letter = document.getElementById('input-letter').value.trim() || defaultData.letter;
+
+            const reasonsText = document.getElementById('input-reasons').value.trim();
+            currentData.reasons = reasonsText ? reasonsText.split('\n').filter(r => r.trim().length > 0) : defaultData.reasons;
+
+            // Guardar en Storage
+            localStorage.setItem('flower_msg', currentData.msg);
+            localStorage.setItem('flower_sub', currentData.sub);
+            localStorage.setItem('flower_date', currentData.date);
+            localStorage.setItem('flower_letter', currentData.letter);
+            localStorage.setItem('flower_reasons', JSON.stringify(currentData.reasons));
+
+            updateUI();
+            startCounter();
+            toggleEditModal();
+            showToast('¡Regalo personalizado guardado!');
+        }
+
+        // Copiar Enlace Configurado
+        function copyShareLink() {
+            const params = new URLSearchParams();
+            params.set('msg', currentData.msg);
+            params.set('sub', currentData.sub);
+            params.set('date', currentData.date);
+            params.set('letter', currentData.letter);
+            params.set('reasons', JSON.stringify(currentData.reasons));
+
+            const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(shareUrl).then(() => showToast('¡Enlace listo para enviar copiado! ❤️'));
+            } else {
+                const textArea = document.createElement('textarea');
+                textArea.value = shareUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('¡Enlace listo para enviar copiado! ❤️');
+                } catch {
+                    showToast('No se pudo copiar automáticamente');
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').textContent = text;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        // Efectos Visuales e Interacciones
+        function createParticles() {
+            const container = document.getElementById('particles-container');
+            const particleCount = 20;
+            const colors = ['#FFD700', '#FFEA00', '#FFF', '#FFB703'];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                const size = Math.random() * 12 + 6;
+                const isPetal = Math.random() > 0.4;
+
+                particle.style.width = `${size}px`;
+                particle.style.height = isPetal ? `${size * 1.4}px` : `${size}px`;
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.borderRadius = isPetal ? '50% 0% 50% 50%' : '50%';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDuration = `${Math.random() * 8 + 6}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                particle.style.opacity = Math.random() * 0.7 + 0.3;
+
+                container.appendChild(particle);
+            }
+        }
+
+        function triggerFlowerPulse(e) {
+            const flowerWrapper = document.getElementById('flower-wrapper');
+            flowerWrapper.style.transform = 'scale(1.12)';
+            setTimeout(() => flowerWrapper.style.transform = 'scale(1)', 300);
+
+            for (let i = 0; i < 8; i++) spawnClickHeart(e.clientX, e.clientY);
+        }
+
+        function spawnClickHeart(x, y) {
+            const heart = document.createElement('div');
+            heart.className = 'click-heart';
+            
+            const icons = ['💛', '🌻', '✨', '💖'];
+            heart.textContent = icons[Math.floor(Math.random() * icons.length)];
+            heart.style.fontSize = `${Math.random() * 16 + 20}px`;
+            heart.style.left = `${x}px`;
+            heart.style.top = `${y}px`;
+
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1000);
+        }
+    </script>
+</body>
+</html>
